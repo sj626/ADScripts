@@ -1,0 +1,44 @@
+#$UsersWithDept =Get-ADUser -Filter * -Properties Department | where -Property Department -ne $null
+
+$UsersWithDept =Get-ADUser -Filter * -SearchBase "OU=TestUsers,DC=pixel,DC=com" -Properties Department | where -Property Department -ne $null
+
+
+for($count=0;$count -lt $UsersWithDept.Length; $count++){
+
+#Write-Host $a[$m].Name for $a[$m].department
+$username = $UsersWithDept[$count].SamAccountName
+
+$grpname = $UsersWithDept[$count].department##Check to see if the user is already member in AD. If the user is not a member it will then add into the members of the group
+
+
+
+##Check to see if the group is already exists in AD. 
+
+$grpexists = Get-ADGroup -Filter {SamAccountName -like $grpname} 
+
+if($grpexists -ne $null)
+{
+
+##Check to see if the user is already member in AD. If the user is not a member it will then add into the members of the group
+
+$Members = Get-ADGroupMember -Identity $grpname -Recursive | Select -ExpandProperty SAMAccountName
+
+if($Members -notcontains $username) {
+
+Add-ADGroupMember -Identity $grpname -Members $UsersWithDept[$count].SamAccountName
+
+}
+else
+{
+
+#Write-Host "no action taken"
+}
+
+}
+
+}
+
+
+#$b =Get-ADUser -Filter * -Properties Department | where -Property Department -eq $null
+
+
